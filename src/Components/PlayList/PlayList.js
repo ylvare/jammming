@@ -6,9 +6,9 @@ class PlayList extends Component {
   render() {
     return (
       <div className="Playlist">
-            <input value='New Playlist' />
-            <TrackList trackList = {this.props.playList} trackAction = "-"/>
-          <a class="Playlist-save">SAVE TO SPOTIFY</a>
+            <input defaultValue='New Playlist' />
+            <TrackList trackList = {this.props.playList} trackAction = "-" trackFunction = {this.props.removeFromPlayList}/>
+            <a class="Playlist-save">SAVE TO SPOTIFY</a>
         </div>
     );
   }

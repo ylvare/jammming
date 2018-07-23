@@ -7,7 +7,7 @@ class SearchResult extends Component {
     return (
       <div className="SearchResults">
                 <h2>Results</h2>
-                <TrackList trackList = {this.props.searchResults} trackAction = "+"/>
+                <TrackList trackList = {this.props.searchResults} trackAction = "+" trackFunction = {this.props.addToPlayList}/>
         </div>
     );
   }

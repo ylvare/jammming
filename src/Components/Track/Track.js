@@ -10,7 +10,7 @@ class Track extends Component {
 
 handleTrackFunction(e){
   this.props.trackFunction(this.props.track)
-  e.preventDefault() 
+  e.preventDefault()
 }
 
   render() {

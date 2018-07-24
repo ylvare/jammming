@@ -3,54 +3,26 @@ import './App.css';
 import SearchBar from './Components/SearchBar/SearchBar'
 import SearchResult from './Components/SearchResult/SearchResult'
 import PlayList from './Components/PlayList/PlayList'
-
-
-const track1 = {
-  key            : "1",
-  title          : "Tiny Dancer",
-  artist         : "Elton John",
-  album          : "Madman Across The Water",
-}
-
-const track2 = {
-  key            : "2",
-  title          : "Stronger",
-  artist         : "Britney Spears",
-  album          : "Oops!... I Did It Again"
-}
-
-const track3 = {
-  key            : "3",
-  title          : "So Emotional",
-  artist         : "Whitney Houston",
-  album          : "Whitney"
-}
-
-const track4 = {
-  key            :"4",
-  title          : "Titel 4",
-  artist         : "Artist 4",
-  album          : "Artist 4"
-}
-
-const searchResult = [track1, track2, track4]
-const playList = [track3]
+import {Spotify} from './Util/Spotify'
 
 class App extends Component {
 
   constructor(props){
     super(props)
     this.state = {
-      searchResult:searchResult,
-      playList:playList
+      searchResult:[],
+      playList:[]
     }
+
     this.addToPlayList = this.addToPlayList.bind(this)
     this.removeFromPlayList = this.removeFromPlayList.bind(this)
+    this.getTracks = this.getTracks.bind(this)
   }
 
   addToPlayList(track){
     const newSearchResult = this.state.searchResult.filter(e => e !== track)
     this.state.playList.push(track)
+    console.log(track.id)
     this.setState({
       searchResult:newSearchResult
     })
@@ -64,12 +36,30 @@ class App extends Component {
     })
   }
 
+  uniqBy (array, key) {
+   let result = new Set()
+   array.forEach(function(item) {
+       if (item.hasOwnProperty(key)) {
+           result.add(item);
+       }
+    })
+    return Array.from(result)
+  }
+
+
+  async getTracks(searchValue){
+      const searchResult = await Spotify.getTracks(searchValue)
+      this.setState({
+        searchResult: this.uniqBy(searchResult,'key')
+      })
+  }
+
   render() {
-    return (
+    return(
       <div>
         <h1>Ja<span className="highlight">mmm</span>ing</h1>
           <div className="App">
-            <SearchBar />
+            <SearchBar getTracks = {this.getTracks}/>
             <div className="App-playlist">
              <SearchResult searchResults = {this.state.searchResult} addToPlayList = {this.addToPlayList}/>
              <PlayList playList={this.state.playList} removeFromPlayList = {this.removeFromPlayList}/>

@@ -11,13 +11,30 @@ class App extends Component {
     super(props)
     this.state = {
       searchResult:[],
-      playList:[]
+      playList:[],
+      authToken: "",
+      authorized: false,
+      profileId: []
     }
 
     this.addToPlayList = this.addToPlayList.bind(this)
     this.removeFromPlayList = this.removeFromPlayList.bind(this)
     this.getTracks = this.getTracks.bind(this)
   }
+
+  componentDidMount = () => {
+  const url = window.location.href;
+  if (url.indexOf("token=") > -1) {
+    const authToken = url
+      .split("token=")[1]
+      .split("&")[0]
+      .trim();
+    const authorized = true;
+    this.setState({
+      authToken : authToken,
+      authorized : authorized });
+  }
+};
 
   addToPlayList(track){
     const newSearchResult = this.state.searchResult.filter(e => e !== track)
@@ -48,13 +65,20 @@ class App extends Component {
 
 
   async getTracks(searchValue){
-      const searchResult = await Spotify.getTracks(searchValue)
+      const profileId = await Spotify.handleAuthFlow(this.state.authorized, this.state.authToken)
       this.setState({
-        searchResult: this.uniqBy(searchResult,'key')
+        profileId: await profileId
       })
+      if (this.state.authorized) {
+        const searchResult = await Spotify.getTracks(searchValue, this.state.authToken)
+        this.setState({
+          searchResult: this.uniqBy(searchResult,'id')
+        })
+      }
   }
 
   render() {
+    console.log(this.state.profileId)
     return(
       <div>
         <h1>Ja<span className="highlight">mmm</span>ing</h1>

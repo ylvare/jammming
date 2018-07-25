@@ -10,6 +10,7 @@ class PlayList extends Component {
       playListName : ''
     }
     this.handleInputValueChange = this.handleInputValueChange.bind(this)
+    this.handleSavePlayList = this.handleSavePlayList.bind(this)
   }
 
   handleInputValueChange(e){
@@ -17,13 +18,19 @@ class PlayList extends Component {
       playListName: e.target.value
     })
     e.preventDefault()
-  }
+   }
+
+  handleSavePlayList(e){
+      this.props.savePlayListToSpotify(this.state.playListName)
+      e.preventDefault()
+    }
+
   render() {
     return (
       <div className="Playlist">
             <input onChange={this.handleInputValueChange} defaultValue='New Playlist' />
             <TrackList trackList = {this.props.playList} trackAction = "-" trackFunction = {this.props.removeFromPlayList}/>
-            <a className="Playlist-save">SAVE TO SPOTIFY</a>
+            <a onClick={this.handleSavePlayList} className="Playlist-save">SAVE TO SPOTIFY</a>
         </div>
     );
   }

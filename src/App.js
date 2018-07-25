@@ -20,6 +20,7 @@ class App extends Component {
     this.addToPlayList = this.addToPlayList.bind(this)
     this.removeFromPlayList = this.removeFromPlayList.bind(this)
     this.getTracks = this.getTracks.bind(this)
+    this.savePlayListToSpotify = this.savePlayListToSpotify.bind(this)
   }
 
   componentDidMount = () => {
@@ -72,13 +73,17 @@ class App extends Component {
       if (this.state.authorized) {
         const searchResult = await Spotify.getTracks(searchValue, this.state.authToken)
         this.setState({
-          searchResult: this.uniqBy(searchResult,'id')
+          searchResult: this.uniqBy(searchResult,'key')
         })
       }
   }
 
+  savePlayListToSpotify(playListName,tracks){
+
+    Spotify.savePlayListToSpotify(playListName,tracks,this.state.profileId, this.state.authToken)
+  }
+
   render() {
-    console.log(this.state.profileId)
     return(
       <div>
         <h1>Ja<span className="highlight">mmm</span>ing</h1>
@@ -86,7 +91,7 @@ class App extends Component {
             <SearchBar getTracks = {this.getTracks}/>
             <div className="App-playlist">
              <SearchResult searchResults = {this.state.searchResult} addToPlayList = {this.addToPlayList}/>
-             <PlayList playList={this.state.playList} removeFromPlayList = {this.removeFromPlayList}/>
+             <PlayList playList={this.state.playList} removeFromPlayList = {this.removeFromPlayList} savePlayListToSpotify={this.savePlayListToSpotify}/>
             </div>
           </div>
       </div>

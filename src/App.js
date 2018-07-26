@@ -12,6 +12,7 @@ class App extends Component {
     this.state = {
       searchResult:[],
       playList:[],
+      playListTitle: 'New Playlist',
       authToken: "",
       authorized: false,
       profileId: []
@@ -21,6 +22,7 @@ class App extends Component {
     this.removeFromPlayList = this.removeFromPlayList.bind(this)
     this.getTracks = this.getTracks.bind(this)
     this.savePlayListToSpotify = this.savePlayListToSpotify.bind(this)
+    this.changePlayListTitle = this.changePlayListTitle.bind(this)
   }
 
   componentDidMount = () => {
@@ -37,10 +39,15 @@ class App extends Component {
   }
 };
 
+  changePlayListTitle(title){
+    this.setState({
+      playListTitle:title
+    })
+  }
+
   addToPlayList(track){
     const newSearchResult = this.state.searchResult.filter(e => e !== track)
     this.state.playList.push(track)
-    console.log(track.id)
     this.setState({
       searchResult:newSearchResult
     })
@@ -54,7 +61,7 @@ class App extends Component {
     })
   }
 
-  uniqBy (array, key) {
+  _uniqBy (array, key) {
    let result = new Set()
    array.forEach(function(item) {
        if (item.hasOwnProperty(key)) {
@@ -73,14 +80,19 @@ class App extends Component {
       if (this.state.authorized) {
         const searchResult = await Spotify.getTracks(searchValue, this.state.authToken)
         this.setState({
-          searchResult: this.uniqBy(searchResult,'key')
+          searchResult: this._uniqBy(searchResult,'key')
         })
       }
   }
 
-  savePlayListToSpotify(playListName,tracks){
-
-    Spotify.savePlayListToSpotify(playListName,tracks,this.state.profileId, this.state.authToken)
+  savePlayListToSpotify(){
+    const trackSpotifyUris = this.state.playList.map(track => track.uri);
+    if(Spotify.savePlayListToSpotify(this.state.playListTitle,trackSpotifyUris,this.state.profileId, this.state.authToken)){
+      this.setState({
+        playList:[],
+        playListTitle:'New Playlist '
+      })
+    }
   }
 
   render() {
@@ -91,7 +103,7 @@ class App extends Component {
             <SearchBar getTracks = {this.getTracks}/>
             <div className="App-playlist">
              <SearchResult searchResults = {this.state.searchResult} addToPlayList = {this.addToPlayList}/>
-             <PlayList playList={this.state.playList} removeFromPlayList = {this.removeFromPlayList} savePlayListToSpotify={this.savePlayListToSpotify}/>
+             <PlayList playList={this.state.playList} playListTitle = {this.state.playListTitle} changePlayListTitle = {this.changePlayListTitle} removeFromPlayList = {this.removeFromPlayList} savePlayListToSpotify={this.savePlayListToSpotify}/>
             </div>
           </div>
       </div>

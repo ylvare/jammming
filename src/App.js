@@ -28,14 +28,21 @@ class App extends Component {
   componentDidMount = () => {
   const url = window.location.href;
   if (url.indexOf("token=") > -1) {
-    const authToken = url
-      .split("token=")[1]
-      .split("&")[0]
-      .trim();
+    let authToken = url.match(/access_token=([^&]*)/)[1]
+    const expiresIn = url.match(/expires_in=([^&]*)/)[1]
     const authorized = true;
+    window.setTimeout(() => {
+      authToken = ''
+      this.setState({
+        authToken : authToken,
+        authorized : false,
+        profileId: []}
+        );
+    }, expiresIn * 1000);
+    window.history.pushState('Access Token', null, '/');
     this.setState({
       authToken : authToken,
-      authorized : authorized });
+      authorized : authorized});
   }
 };
 
@@ -61,31 +68,26 @@ class App extends Component {
     })
   }
 
-  _uniqBy (array, key) {
-   let result = new Set()
-   array.forEach(function(item) {
-       if (item.hasOwnProperty(key)) {
-           result.add(item);
-       }
+  async handleAuthFlow() {
+    const profileId = await Spotify.handleAuthFlow(this.state.authorized, this.state.authToken)
+    this.setState({
+      profileId: await profileId
     })
-    return Array.from(result)
   }
 
-
   async getTracks(searchValue){
-      const profileId = await Spotify.handleAuthFlow(this.state.authorized, this.state.authToken)
+      this.handleAuthFlow()
+      if(this.state.authorized) {
+      const searchResult = await Spotify.getTracks(searchValue, this.state.authToken)
       this.setState({
-        profileId: await profileId
-      })
-      if (this.state.authorized) {
-        const searchResult = await Spotify.getTracks(searchValue, this.state.authToken)
-        this.setState({
-          searchResult: this._uniqBy(searchResult,'key')
+          searchResult: searchResult
         })
       }
   }
 
   savePlayListToSpotify(){
+    this.handleAuthFlow()
+    if(this.state.authorized) {
     const trackSpotifyUris = this.state.playList.map(track => track.uri);
     if(Spotify.savePlayListToSpotify(this.state.playListTitle,trackSpotifyUris,this.state.profileId, this.state.authToken)){
       this.setState({
@@ -94,6 +96,7 @@ class App extends Component {
       })
     }
   }
+}
 
   render() {
     return(

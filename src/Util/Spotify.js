@@ -7,7 +7,7 @@ const endPointSearch = 'https://api.spotify.com/v1/search'
 const scope='playlist-modify playlist-modify-public'
 const spotifyWebApiURL = `${endPointAuth}?client_id=${clientId}&response_type=${responseType}&redirect_uri=${redirectUrl}&scope=${scope}`
 const spotifyProfileURL = "https://api.spotify.com/v1/me";
-const querySearch = "{endPointSearch}?q={searchType}:{searchValue}&type=track"
+const querySearch = "{endPointSearch}?q={searchValue}&type=track"
 const spotifyCreatePlayListURL = "https://api.spotify.com/v1/users/{profileId}/playlists"
 const spotifyAddTracksToPlayListURL =  `https://api.spotify.com/v1/users/{profileId}/playlists/{playListId}/tracks`
 
@@ -34,8 +34,9 @@ const Spotify = {
     }
   }
     ,
-    _getTracks: function (searchValue, searchType, authToken) {
-      const q = querySearch.replace("{endPointSearch}", endPointSearch).replace("{searchType}", searchType).replace("{searchValue}", searchValue)
+
+    getTracks :  async function (searchValue, authToken) {
+      const q = querySearch.replace("{endPointSearch}", endPointSearch).replace("{searchValue}", searchValue)
       return fetch(q, {
         headers: {
           'Authorization': 'Bearer ' + authToken
@@ -49,9 +50,9 @@ const Spotify = {
     ).then(jsonResponse => {
         if(jsonResponse.tracks.items){
             return (jsonResponse.tracks.items.map((track) => {
-                          const timeStamp = new Date().getTime();
+
                           return {
-                          key: track.id + timeStamp,
+                          key: track.id,
                           uri: track.uri,
                           title: track.name.substring(0, 60),
                           artist: track.artists[0].name,
@@ -60,13 +61,6 @@ const Spotify = {
             }))
         }
     })
-},
-    getTracks :  async function (searchValue, authToken) {
-       const result1 =  await this._getTracks(searchValue, 'artist', authToken)
-       const result2  = await this._getTracks(searchValue, 'album', authToken)
-       const result3  = await this._getTracks(searchValue, 'track', authToken)
-       const trackList = await result1.concat(await result2).concat(await result3)
-       return trackList
    },
 
    savePlayListToSpotify: async function (playListName, trackSpotifyUris, profileId, authToken){
@@ -102,7 +96,7 @@ const Spotify = {
           if (response.ok){
             return true
           }
-          throw new Error ('Request failed')
+          throw new Error ('Request failed!')
         }, networkError => console.log(networkError.message)
       )})
    }

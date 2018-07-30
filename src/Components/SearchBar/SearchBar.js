@@ -4,18 +4,9 @@ import './SearchBar.css';
 class SearchBar extends Component {
   constructor(props){
     super(props)
-    this.state = {
-      searchValue : this.props.searchValue
-    }
     this.handleGetTracks = this.handleGetTracks.bind(this)
     this.handleInputValueChange = this.handleInputValueChange.bind(this)
   }
-
-  componentDidMount = async () => {
-    this.setState ({
-      searchValue: this.props.searchValue
-    })
- }
 
   handleInputValueChange(e){
     this.props.handleSearchValueChange(e.target.value)

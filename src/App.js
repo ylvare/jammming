@@ -15,7 +15,9 @@ class App extends Component {
       playListTitle: 'New Playlist',
       authToken: "",
       authorized: false,
-      profileId: []
+      profileId: '',
+      searchValue: ''
+
     }
 
     this.addToPlayList = this.addToPlayList.bind(this)
@@ -23,14 +25,16 @@ class App extends Component {
     this.getTracks = this.getTracks.bind(this)
     this.savePlayListToSpotify = this.savePlayListToSpotify.bind(this)
     this.changePlayListTitle = this.changePlayListTitle.bind(this)
+    this.handleSearchValueChange = this.handleSearchValueChange.bind(this)
   }
 
-  componentDidMount = () => {
+  componentDidMount = async () => {
   const url = window.location.href;
   if (url.indexOf("token=") > -1) {
     let authToken = url.match(/access_token=([^&]*)/)[1]
     const expiresIn = url.match(/expires_in=([^&]*)/)[1]
     const authorized = true;
+
     window.setTimeout(() => {
       authToken = ''
       this.setState({
@@ -39,12 +43,23 @@ class App extends Component {
         profileId: []}
         );
     }, expiresIn * 1000);
+
     window.history.pushState('Access Token', null, '/');
+
     this.setState({
       authToken : authToken,
       authorized : authorized});
+
+    const searchValue  = sessionStorage.getItem("searchValue")
+    this.setState({
+        searchValue: searchValue
+      })
+
+    window.setTimeout(async () => {
+       this.getTracks()
+    }, 1)
   }
-};
+}
 
   changePlayListTitle(title){
     this.setState({
@@ -71,24 +86,29 @@ class App extends Component {
   async handleAuthFlow() {
     const profileId = await Spotify.handleAuthFlow(this.state.authorized, this.state.authToken)
     this.setState({
-      profileId: await profileId
+      profileId: profileId
     })
   }
 
-  async getTracks(searchValue){
+  handleSearchValueChange(searchValue){
+    this.setState ({
+      searchValue: searchValue
+    })
+  }
+
+  async getTracks(){
+      window.sessionStorage.setItem('searchValue', this.state.searchValue);
       this.handleAuthFlow()
       if(this.state.authorized) {
-      const searchResult = await Spotify.getTracks(searchValue, this.state.authToken)
+      const searchResult = await Spotify.getTracks(this.state.searchValue, this.state.authToken)
       this.setState({
           searchResult: searchResult
         })
-      }
+     }
   }
 
   savePlayListToSpotify(){
-    this.handleAuthFlow()
-    if(this.state.authorized) {
-    const trackSpotifyUris = this.state.playList.map(track => track.uri);
+    const trackSpotifyUris = this.state.playList.map(track => track.uri)
     if(Spotify.savePlayListToSpotify(this.state.playListTitle,trackSpotifyUris,this.state.profileId, this.state.authToken)){
       this.setState({
         playList:[],
@@ -96,14 +116,13 @@ class App extends Component {
       })
     }
   }
-}
 
   render() {
     return(
       <div>
         <h1>Ja<span className="highlight">mmm</span>ing</h1>
           <div className="App">
-            <SearchBar getTracks = {this.getTracks}/>
+            <SearchBar searchValue = {this.state.searchValue} handleSearchValueChange = {this.handleSearchValueChange} getTracks = {this.getTracks}/>
             <div className="App-playlist">
              <SearchResult searchResults = {this.state.searchResult} addToPlayList = {this.addToPlayList}/>
              <PlayList playList={this.state.playList} playListTitle = {this.state.playListTitle} changePlayListTitle = {this.changePlayListTitle} removeFromPlayList = {this.removeFromPlayList} savePlayListToSpotify={this.savePlayListToSpotify}/>

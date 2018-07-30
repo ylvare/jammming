@@ -5,28 +5,30 @@ class SearchBar extends Component {
   constructor(props){
     super(props)
     this.state = {
-      searchValue : ''
+      searchValue : this.props.searchValue
     }
     this.handleGetTracks = this.handleGetTracks.bind(this)
     this.handleInputValueChange = this.handleInputValueChange.bind(this)
   }
 
-  handleInputValueChange(e){
+  componentDidMount = async () => {
     this.setState ({
-      searchValue: e.target.value
+      searchValue: this.props.searchValue
     })
-    e.preventDefault()
+ }
+
+  handleInputValueChange(e){
+    this.props.handleSearchValueChange(e.target.value)
   }
 
   handleGetTracks(e){
-    this.props.getTracks(this.state.searchValue)
-    e.preventDefault()
+    this.props.getTracks()
   }
 
   render() {
     return (
       <div className="SearchBar">
-        <input onChange={this.handleInputValueChange} placeholder="Enter A Song Title" />
+        <input onChange={this.handleInputValueChange} defaultValue = {this.props.searchValue} placeholder="Enter A Song Title" />
         <a  onClick={this.handleGetTracks}> SEARCH </a>
       </div>
     );
